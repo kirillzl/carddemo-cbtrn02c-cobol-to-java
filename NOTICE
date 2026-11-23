@@ -1,0 +1,11 @@
+CardDemo CBTRN02C COBOL to Java migration
+
+This repository includes COBOL source and copybooks from AWS CardDemo:
+https://github.com/aws-samples/aws-mainframe-modernization-carddemo
+
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License, Version 2.0.
+
+The Java port, tests, parity harness, edge-case data, specification, and
+migration report are original work by Kyrill Zlobenko, built with Devin
+(Cognition), also licensed under the Apache License, Version 2.0.
