@@ -1,0 +1,6 @@
+TRANFILE  IDENTICAL cobol=    5250 bytes sha256=2da283ae83503683
+DALYREJS  IDENTICAL cobol=    3870 bytes sha256=20cc84cf46ab7900
+ACCT      IDENTICAL cobol=    3900 bytes sha256=5413cc151b7e3f37
+TCATBAL   IDENTICAL cobol=     600 bytes sha256=ce667e7a892ab3be
+SYSOUT    IDENTICAL cobol=     729 bytes sha256=3c27c91122971d09
+RC        IDENTICAL cobol=       2 bytes sha256=7de1555df0c27003
