@@ -1,0 +1,13 @@
+TRANFILE  IDENTICAL cobol=     700 bytes sha256=e0a68d0f73bb499e
+DALYREJS  IDENTICAL cobol=       0 bytes sha256=e3b0c44298fc1c14
+ACCT      IDENTICAL cobol=    3900 bytes sha256=bceeb4f60ece9925
+TCATBAL   IDENTICAL cobol=     200 bytes sha256=ee6a82b388d55e99
+SYSOUT    IDENTICAL cobol=     200 bytes sha256=a0a4c4b8c4d8242e
+RC        IDENTICAL cobol=       4 bytes sha256=253f8ae765c23470
+note: GnuCOBOL runtime stderr (not program output):
+  libcob: warning: implicit CLOSE of TCATBAL-FILE ('TCATBALF')
+  libcob: warning: implicit CLOSE of ACCOUNT-FILE ('ACCTFILE')
+  libcob: warning: implicit CLOSE of DALYREJS-FILE ('DALYREJS')
+  libcob: warning: implicit CLOSE of XREF-FILE ('XREFFILE')
+  libcob: warning: implicit CLOSE of TRANSACT-FILE ('TRANFILE')
+  libcob: warning: implicit CLOSE of DALYTRAN-FILE ('DALYTRAN')
