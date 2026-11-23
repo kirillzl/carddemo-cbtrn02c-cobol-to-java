@@ -1,0 +1,198 @@
+      *****************************************************************
+      * Test-harness utility (IDCAMS REPRO equivalent).
+      *   UTLIDX LOAD|UNLOAD XREF|ACCT|TCAT|TRAN|CARD
+      * LOAD   : flat fixed-length file FLATFILE -> indexed IDXFILE
+      * UNLOAD : indexed IDXFILE -> flat FLATFILE, in key sequence
+      *****************************************************************
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. UTLIDX.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT FLAT50  ASSIGN TO FLATFILE
+                  ORGANIZATION IS SEQUENTIAL FILE STATUS IS WS-FS-FLAT.
+           SELECT FLAT150 ASSIGN TO FLATFILE
+                  ORGANIZATION IS SEQUENTIAL FILE STATUS IS WS-FS-FLAT.
+           SELECT FLAT300 ASSIGN TO FLATFILE
+                  ORGANIZATION IS SEQUENTIAL FILE STATUS IS WS-FS-FLAT.
+           SELECT FLAT350 ASSIGN TO FLATFILE
+                  ORGANIZATION IS SEQUENTIAL FILE STATUS IS WS-FS-FLAT.
+           SELECT IX-XREF ASSIGN TO IDXFILE ORGANIZATION IS INDEXED
+                  ACCESS MODE IS DYNAMIC RECORD KEY IS IX-XREF-KEY
+                  FILE STATUS IS WS-FS-IDX.
+           SELECT IX-ACCT ASSIGN TO IDXFILE ORGANIZATION IS INDEXED
+                  ACCESS MODE IS DYNAMIC RECORD KEY IS IX-ACCT-KEY
+                  FILE STATUS IS WS-FS-IDX.
+           SELECT IX-TCAT ASSIGN TO IDXFILE ORGANIZATION IS INDEXED
+                  ACCESS MODE IS DYNAMIC RECORD KEY IS IX-TCAT-KEY
+                  FILE STATUS IS WS-FS-IDX.
+           SELECT IX-TRAN ASSIGN TO IDXFILE ORGANIZATION IS INDEXED
+                  ACCESS MODE IS DYNAMIC RECORD KEY IS IX-TRAN-KEY
+                  FILE STATUS IS WS-FS-IDX.
+           SELECT IX-CARD ASSIGN TO IDXFILE ORGANIZATION IS INDEXED
+                  ACCESS MODE IS DYNAMIC RECORD KEY IS IX-CARD-KEY
+                  FILE STATUS IS WS-FS-IDX.
+       DATA DIVISION.
+       FILE SECTION.
+       FD  FLAT50.
+       01  FLAT50-REC              PIC X(50).
+       FD  FLAT150.
+       01  FLAT150-REC             PIC X(150).
+       FD  FLAT300.
+       01  FLAT300-REC             PIC X(300).
+       FD  FLAT350.
+       01  FLAT350-REC             PIC X(350).
+       FD  IX-XREF.
+       01  IX-XREF-REC.
+           05 IX-XREF-KEY          PIC X(16).
+           05 FILLER               PIC X(34).
+       FD  IX-ACCT.
+       01  IX-ACCT-REC.
+           05 IX-ACCT-KEY          PIC X(11).
+           05 FILLER               PIC X(289).
+       FD  IX-TCAT.
+       01  IX-TCAT-REC.
+           05 IX-TCAT-KEY          PIC X(17).
+           05 FILLER               PIC X(33).
+       FD  IX-TRAN.
+       01  IX-TRAN-REC.
+           05 IX-TRAN-KEY          PIC X(16).
+           05 FILLER               PIC X(334).
+       FD  IX-CARD.
+       01  IX-CARD-REC.
+           05 IX-CARD-KEY          PIC X(16).
+           05 FILLER               PIC X(134).
+       WORKING-STORAGE SECTION.
+       01  WS-MODE                 PIC X(06).
+       01  WS-TYPE                 PIC X(04).
+       01  WS-FS-FLAT              PIC X(02).
+       01  WS-FS-IDX               PIC X(02).
+       01  WS-EOF                  PIC X VALUE 'N'.
+       01  WS-COUNT                PIC 9(09) VALUE 0.
+       01  WS-BUF                  PIC X(350).
+       PROCEDURE DIVISION.
+           ACCEPT WS-MODE FROM ARGUMENT-VALUE
+           ACCEPT WS-TYPE FROM ARGUMENT-VALUE
+           EVALUATE WS-MODE ALSO WS-TYPE
+             WHEN 'LOAD'   ALSO 'XREF' PERFORM LOAD-XREF
+             WHEN 'LOAD'   ALSO 'ACCT' PERFORM LOAD-ACCT
+             WHEN 'LOAD'   ALSO 'TCAT' PERFORM LOAD-TCAT
+             WHEN 'LOAD'   ALSO 'TRAN' PERFORM LOAD-TRAN
+             WHEN 'LOAD'   ALSO 'CARD' PERFORM LOAD-CARD
+             WHEN 'UNLOAD' ALSO 'XREF' PERFORM UNLOAD-XREF
+             WHEN 'UNLOAD' ALSO 'ACCT' PERFORM UNLOAD-ACCT
+             WHEN 'UNLOAD' ALSO 'TCAT' PERFORM UNLOAD-TCAT
+             WHEN 'UNLOAD' ALSO 'TRAN' PERFORM UNLOAD-TRAN
+             WHEN 'UNLOAD' ALSO 'CARD' PERFORM UNLOAD-CARD
+             WHEN OTHER
+               DISPLAY 'USAGE: UTLIDX LOAD|UNLOAD XREF|ACCT|TCAT|TRAN'
+               MOVE 16 TO RETURN-CODE
+               STOP RUN
+           END-EVALUATE
+           DISPLAY 'UTLIDX ' WS-MODE ' ' WS-TYPE ' RECORDS: ' WS-COUNT
+           STOP RUN.
+
+       CHECK-FS.
+           IF WS-FS-FLAT NOT = '00' AND WS-FS-FLAT NOT = '10'
+              DISPLAY 'FLAT FILE STATUS ' WS-FS-FLAT
+              MOVE 12 TO RETURN-CODE
+              STOP RUN
+           END-IF
+           IF WS-FS-IDX NOT = '00' AND WS-FS-IDX NOT = '10'
+              AND WS-FS-IDX NOT = '02' AND WS-FS-IDX NOT = '05'
+              DISPLAY 'INDEXED FILE STATUS ' WS-FS-IDX
+              MOVE 12 TO RETURN-CODE
+              STOP RUN
+           END-IF.
+
+       LOAD-XREF.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT FLAT50 OUTPUT IX-XREF PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ FLAT50 AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE IX-XREF-REC FROM FLAT50-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT50 IX-XREF.
+       LOAD-ACCT.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT FLAT300 OUTPUT IX-ACCT PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ FLAT300 AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE IX-ACCT-REC FROM FLAT300-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT300 IX-ACCT.
+       LOAD-TCAT.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT FLAT50 OUTPUT IX-TCAT PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ FLAT50 AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE IX-TCAT-REC FROM FLAT50-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT50 IX-TCAT.
+       LOAD-TRAN.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT FLAT350 OUTPUT IX-TRAN PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ FLAT350 AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE IX-TRAN-REC FROM FLAT350-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT350 IX-TRAN.
+       LOAD-CARD.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT FLAT150 OUTPUT IX-CARD PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ FLAT150 AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE IX-CARD-REC FROM FLAT150-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT150 IX-CARD.
+
+       UNLOAD-XREF.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT IX-XREF OUTPUT FLAT50 PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ IX-XREF NEXT AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE FLAT50-REC FROM IX-XREF-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT50 IX-XREF.
+       UNLOAD-ACCT.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT IX-ACCT OUTPUT FLAT300 PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ IX-ACCT NEXT AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE FLAT300-REC FROM IX-ACCT-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT300 IX-ACCT.
+       UNLOAD-TCAT.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT IX-TCAT OUTPUT FLAT50 PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ IX-TCAT NEXT AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE FLAT50-REC FROM IX-TCAT-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT50 IX-TCAT.
+       UNLOAD-TRAN.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT IX-TRAN OUTPUT FLAT350 PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ IX-TRAN NEXT AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE FLAT350-REC FROM IX-TRAN-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT350 IX-TRAN.
+       UNLOAD-CARD.
+           MOVE '00' TO WS-FS-FLAT WS-FS-IDX
+           OPEN INPUT IX-CARD OUTPUT FLAT150 PERFORM CHECK-FS
+           PERFORM UNTIL WS-EOF = 'Y'
+             READ IX-CARD NEXT AT END MOVE 'Y' TO WS-EOF
+             NOT AT END WRITE FLAT150-REC FROM IX-CARD-REC
+                        PERFORM CHECK-FS ADD 1 TO WS-COUNT END-READ
+           END-PERFORM
+           CLOSE FLAT150 IX-CARD.
