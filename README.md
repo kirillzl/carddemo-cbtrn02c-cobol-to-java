@@ -1,5 +1,9 @@
 # CardDemo CBTRN02C: COBOL to Java
 
+## Why this matters
+
+This is the batch COBOL posting work banks still run. Devin plus a human produced a Java 17 port with byte-identical output on 329 transactions. Eleven latent bugs are documented and kept by default so results match, with optional fix switches. A bank would still sign off before cut-over.
+
 CBTRN02C is the CardDemo batch job that posts daily credit-card transactions. It validates each transaction, writes accepts and rejects (with reason codes), and updates the account master and category balances.
 
 ## What was done
